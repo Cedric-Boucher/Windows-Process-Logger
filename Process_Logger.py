@@ -100,7 +100,7 @@ def main() -> None:
     active_processes, active_window_process = append_to_log_file()
     runs = 1
     while True:
-        print("log runs: " + str(runs))
+        print("\rlog runs: " + str(runs), end="")
         time.sleep(30)
         active_processes, active_window_process = append_to_log_file(last_known_active_processes = active_processes, last_known_active_window_process = active_window_process)
         runs += 1
