@@ -54,12 +54,32 @@ def get_active_processes() -> list:
     return output
 
 
-def append_to_log_file(file = "process_log.csv") -> None:
-    pass
+def append_to_log_file(file = "process_log.csv", last_known_active_processes = None, last_known_active_window_process = None) -> None:
+    """
+    appends data to log file, only if there is any change in data.
+    returns [active_processes, active_window_process] to be passed
+    as input on the next call
+    """
+    active_window_process = get_active_window_process()
+    active_processes = get_active_processes()
+
+    same_processes = (active_processes == last_known_active_processes)
+    same_active_process = (active_window_process == last_known_active_window_process)
+
+    if (not same_active_process) or (not same_processes):
+        if not same_active_process:
+            # append new active process to log
+            pass
+        if not same_processes:
+            # append changed processes to log
+            pass
+    
+    return [active_processes, active_window_process]
+
 
 
 def main() -> None:
-    print(get_active_processes())
+    print(len(get_active_processes()))
     print(get_active_window_process())
 
 
