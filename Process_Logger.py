@@ -6,15 +6,24 @@ import time
 
 def get_active_window_process() -> psutil.Process:
     """
-    returns the Process object of the process
-    that is in focus by the user, or None
+    returns [process_id, name_of_process, create_time(s)]
+    for the process that is in focus by the user, or None
     """
     pid = None
     window = win32gui.GetForegroundWindow()
     pid = win32process.GetWindowThreadProcessId(window)[1]
-
     if pid is not None:
-        return psutil.Process(pid)
+        try:
+            process = psutil.Process(pid)
+            status = process.status()
+            if status == "running":
+                name = process.name()
+                create_time = process.create_time()
+                return [pid, name, create_time]
+            else:
+                return None
+        except psutil.NoSuchProcess:
+            pass
     else:
         return None
 
@@ -50,8 +59,8 @@ def append_to_log_file(file = "process_log.csv") -> None:
 
 
 def main() -> None:
-    #print(get_active_window_process())
     print(get_active_processes())
+    print(get_active_window_process())
 
 
 if __name__ == "__main__":
