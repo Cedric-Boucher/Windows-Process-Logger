@@ -4,7 +4,7 @@ import win32gui
 import time
 
 
-def get_active_window_process() -> psutil.Process:
+def get_active_window_process() -> list:
     """
     returns [process_id, name_of_process, create_time(s)]
     for the process that is in focus by the user, or None
