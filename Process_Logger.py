@@ -2,6 +2,7 @@ import psutil
 import win32process
 import win32gui
 import datetime
+import time
 
 
 def get_active_window_process() -> list:
@@ -82,7 +83,6 @@ def append_to_log_file(file = "process_log.csv", last_known_active_processes = [
                 process_differences = [process for process in active_processes if process not in last_known_active_processes]
                 [process_differences.append(process) for process in last_known_active_processes if process not in active_processes]
                 # process_differences is the symmetric difference between the two lists of active processes (set theory stuff)
-                # process_differences = list(set(active_processes) ^ set(last_known_active_processes)) # apparently list isn't hashable
                 output_lines = list()
                 for process in process_differences:
                     if process != []:
@@ -96,14 +96,12 @@ def append_to_log_file(file = "process_log.csv", last_known_active_processes = [
     return [active_processes, active_window_process]
 
 
-
 def main() -> None:
-    #print(get_active_processes())
-    #print(get_active_window_process())
     active_processes, active_window_process = append_to_log_file()
     runs = 1
     while True:
         print("log runs: " + str(runs))
+        time.sleep(30)
         active_processes, active_window_process = append_to_log_file(last_known_active_processes = active_processes, last_known_active_window_process = active_window_process)
         runs += 1
 
