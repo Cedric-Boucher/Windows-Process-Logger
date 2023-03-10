@@ -77,7 +77,10 @@ def append_to_log_file(file = "process_log.csv", last_known_active_processes = [
         with open(file, "a") as file_object:
             if not same_active_process:
                 # append changed focused process to log
-                file_object.writelines(["{},{},{},{},{},{},{}\n".format(date, time, active_window_process[0], active_window_process[1], True, None, first_run)])
+                if active_window_process == None:
+                    file_object.writelines(["{},{},{},{},{},{},{}\n".format(date, time, active_window_process, active_window_process, True, None, first_run)])
+                else:
+                    file_object.writelines(["{},{},{},{},{},{},{}\n".format(date, time, active_window_process[0], active_window_process[1], True, None, first_run)])
             if not same_processes:
                 # append changed processes to log
                 process_differences = [process for process in active_processes if process not in last_known_active_processes]
