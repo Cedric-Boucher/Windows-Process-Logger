@@ -14,7 +14,7 @@ def get_active_window_process() -> list:
     # check which process is in focus by the user
     window = win32gui.GetForegroundWindow()
     pid = win32process.GetWindowThreadProcessId(window)[1]
-    if pid is not None:
+    if pid is not None and pid >= 0:
         try: # try getting information about the process
             process = psutil.Process(pid)
             status = process.status()
