@@ -153,3 +153,6 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 
+# TODO: csv is not the best format for the log, maybe try using flags for different kinds of lines to avoid redundancy?
+# TODO: you don't check if is_locked or current_user changes between logs, if no proccesses change, any updates don't get logged
+
