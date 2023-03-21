@@ -97,6 +97,9 @@ def append_to_log_file(file = "process_log.csv", last_known_active_processes = [
     data format in log (csv) file:
     date(YYYY-MM-DD),time(HH-MM-SS.ZZZZ),PID(int),name(str),focused(bool),is_locked(bool),current_user(str),start/end,initial_run
     """
+
+    # FIXME: there is a lot of redundancy in each line of the csv
+
     active_window_process = get_active_window_process()
     active_processes = get_active_processes()
     [is_locked, current_user] = check_user_and_locked()
