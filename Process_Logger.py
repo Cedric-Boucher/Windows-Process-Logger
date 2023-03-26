@@ -105,6 +105,7 @@ def get_last_input_time() -> float:
     """
     returns how many seconds ago was the last user input
     """
+    global last_input_time
     return time.time() - last_input_time
 
 
@@ -114,48 +115,53 @@ def append_to_log_file(file = "process_log.csv", last_known_active_processes = [
     returns [active_processes, active_window_process] to be passed
     as input on the next call
 
-    data format in log (csv) file:
-    date(YYYY-MM-DD),time(HH-MM-SS.ZZZZ),PID(int),name(str),focused(bool),is_locked(bool),current_user(str),start/end,initial_run
+    see FILE FORMAT.txt
     """
-
-    # FIXME: there is a lot of redundancy in each line of the csv
 
     active_window_process = get_active_window_process()
     active_processes = get_active_processes()
     [is_locked, current_user] = check_user_and_locked()
+    time_since_user_input = get_last_input_time()
 
     same_processes = (active_processes == last_known_active_processes)
     same_active_process = (active_window_process == last_known_active_window_process)
+
+    date = datetime.datetime.now().strftime("%Y-%m-%d")
+    time = datetime.datetime.now().strftime("%H-%M-%S.%f")
 
     if last_known_active_processes == [] or last_known_active_window_process == []:
         first_run = True
     else:
         first_run = False
 
-    if (not same_active_process) or (not same_processes):
-        date = datetime.datetime.now().strftime("%Y-%m-%d")
-        time = datetime.datetime.now().strftime("%H-%M-%S.%f")
-        with open(file, "a") as file_object:
-            if not same_active_process:
-                # append changed focused process to log
-                if active_window_process == None:
-                    file_object.writelines(["{},{},{},{},{},{},{},{},{}\n".format(date, time, active_window_process, active_window_process, True, is_locked, current_user, None, first_run)])
+    with open(file, "a") as file_object:
+        if not same_active_process:
+            # append changed focused process to log
+            if active_window_process == None:
+                output_text = "{},{},{},{},{},{},{},{},{}\n".format(date, time, active_window_process, active_window_process, True, is_locked, current_user, None, first_run)
+            else:
+                output_text = "{},{},{},{},{},{},{},{},{}\n".format(date, time, active_window_process[0], active_window_process[1], True, is_locked, current_user, None, first_run)
+            if first_run:
+                output_text = "I,"+output_text
+            file_object.writelines([output_text])
+
+        if not same_processes:
+            # append changed processes to log
+            process_differences = [process for process in active_processes if process not in last_known_active_processes]
+            [process_differences.append(process) for process in last_known_active_processes if process not in active_processes]
+            # process_differences is the symmetric difference between the two lists of active processes (set theory stuff)
+            process_differences = [process for process in process_differences if process != []] # filtering out empty processes
+            output_lines = list()
+            for process in process_differences:
+                if process in active_processes:
+                    start_or_end = "start"
                 else:
-                    file_object.writelines(["{},{},{},{},{},{},{},{},{}\n".format(date, time, active_window_process[0], active_window_process[1], True, is_locked, current_user, None, first_run)])
-            if not same_processes:
-                # append changed processes to log
-                process_differences = [process for process in active_processes if process not in last_known_active_processes]
-                [process_differences.append(process) for process in last_known_active_processes if process not in active_processes]
-                # process_differences is the symmetric difference between the two lists of active processes (set theory stuff)
-                output_lines = list()
-                for process in process_differences:
-                    if process != []:
-                        if process in active_processes:
-                            start_or_end = "start"
-                        else:
-                            start_or_end = "end"
-                        output_lines.append("{},{},{},{},{},{},{},{},{}\n".format(date, time, process[0], process[1], False, is_locked, current_user, start_or_end, first_run))
-                file_object.writelines(output_lines)
+                    start_or_end = "end"
+                output_text = "{},{},{},{},{},{},{},{},{}\n".format(date, time, process[0], process[1], False, is_locked, current_user, start_or_end, first_run)
+                if first_run:
+                    output_text = "I,"+output_text
+                output_lines.append(output_text)
+            file_object.writelines(output_lines)
     
     return [active_processes, active_window_process]
 
