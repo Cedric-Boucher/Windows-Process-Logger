@@ -2,9 +2,23 @@ import psutil
 import wmi
 import win32process
 import win32gui
+from pynput import keyboard, mouse
 import datetime
 import time
 
+########## initialize user activity listener ##########
+last_input_time = time.time()
+
+def on_activity(*args):
+    global last_input_time
+    last_input_time = time.time()
+
+keyboard_listener = keyboard.Listener(on_press=on_activity, on_release=on_activity)
+mouse_listener = mouse.Listener(on_move=on_activity, on_click=on_activity)
+
+keyboard_listener.start()
+mouse_listener.start()
+########## end initialize user activity listener ##########
 
 def get_active_window_process() -> list:
     """
@@ -87,6 +101,12 @@ def check_user_and_locked() -> list:
     return [is_locked, current_user]
 
 
+def get_last_input_time() -> float:
+    """
+    returns how many seconds ago was the last user input
+    """
+    return time.time() - last_input_time
+
 
 def append_to_log_file(file = "process_log.csv", last_known_active_processes = [], last_known_active_window_process = []) -> None:
     """
@@ -156,3 +176,25 @@ if __name__ == "__main__":
 # TODO: csv is not the best format for the log, maybe try using flags for different kinds of lines to avoid redundancy?
 # TODO: you don't check if is_locked or current_user changes between logs, if no proccesses change, any updates don't get logged
 
+"""
+LOG file format:
+    lines can start with one of: "F" (focus change), "L" (locked/unlocked), "U" (user change), "P" (process start/end), "I" (initial run of program)
+
+    format for each line start:
+        F,date(YYYY-MM-DD),time(HH-MM-SS.ZZZZ),PID(int),name(str)
+        which means that process with process ID "PID" and name "name" is now in focus, and whatever process that was previously in focus no longer is
+
+        L,date(YYYY-MM-DD),time(HH-MM-SS.ZZZZ),is_locked(bool)
+        which simply indicates a change in the locked status of the computer, and is_locked is true if the computer is locked, else false
+
+        U,date(YYYY-MM-DD),time(HH-MM-SS.ZZZZ),current_user(str)
+        which indicates a change in the currently logged in user
+
+        P,date(YYYY-MM-DD),time(HH-MM-SS.ZZZZ),PID(int),name(str),start/end
+        which indicates that a process "PID" has either started or ended since the last time the script checked for running programs
+
+        I,[]
+        where [] is any other line format as described above
+        the lines written to the log file on startup of the script will have this format, and are otherwise identical to normal lines
+        the reason this distinction exists is that lines from the first run can be redundant or contain "outdated" information, and should be treated separately
+"""
