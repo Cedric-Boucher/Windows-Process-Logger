@@ -178,7 +178,7 @@ if __name__ == "__main__":
 
 """
 LOG file format:
-    lines can start with one of: "F" (focus change), "L" (locked/unlocked), "U" (user change), "P" (process start/end), "I" (initial run of program)
+    lines can start with one of: "F" (focus change), "L" (locked/unlocked), "U" (user change), "P" (process start/end), "I" (initial run of program), "A" (user activity)
 
     format for each line start:
         F,date(YYYY-MM-DD),time(HH-MM-SS.ZZZZ),PID(int),name(str)
@@ -192,6 +192,11 @@ LOG file format:
 
         P,date(YYYY-MM-DD),time(HH-MM-SS.ZZZZ),PID(int),name(str),start/end
         which indicates that a process "PID" has either started or ended since the last time the script checked for running programs
+
+        A,date(YYYY-MM-DD),time(HH-MM-SS.ZZZZ),time_since_last_user_activity(float)
+        which indicates a change in time since last user activity
+        if this is an "I" line, time should be 0 (or near 0)
+        if no user activity is detected, no new A lines will be added, when user activity is detected, a new A line will be added on the next log cycle
 
         I,[]
         where [] is any other line format as described above
