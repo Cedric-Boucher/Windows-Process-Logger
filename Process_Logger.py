@@ -109,7 +109,7 @@ def get_last_input_time() -> float:
     return time.time() - last_input_time
 
 
-def append_to_log_file(file = "process_log.csv", last_known_active_processes = [], last_known_active_window_process = []) -> None:
+def append_to_log_file(file = "process_log.csv") -> None:
     """
     appends data to log file, only if there is any change in data.
     returns [active_processes, active_window_process] to be passed
@@ -123,16 +123,79 @@ def append_to_log_file(file = "process_log.csv", last_known_active_processes = [
     [is_locked, current_user] = check_user_and_locked()
     time_since_user_input = get_last_input_time()
 
-    same_processes = (active_processes == last_known_active_processes)
-    same_active_process = (active_window_process == last_known_active_window_process)
+    ########## initialize variables and check for differences ##########
+    try:
+        same_processes = (active_processes == append_to_log_file.last_known_active_processes)
+    except AttributeError:
+        append_to_log_file.last_known_active_processes = []
+    
+    try:
+        same_active_process = (active_window_process == append_to_log_file.last_known_active_window_process)
+    except AttributeError:
+        append_to_log_file.last_known_active_window_process = []
+    
+    try:
+        same_locked = (is_locked == append_to_log_file.last_known_locked)
+    except AttributeError:
+        append_to_log_file.last_known_locked = None
+    
+    try:
+        same_user = (current_user == append_to_log_file.last_known_user)
+    except AttributeError:
+        append_to_log_file.last_known_user = None
+
+    try:
+        same_last_active_time = (time_since_user_input == append_to_log_file.last_known_user_time)
+    except AttributeError:
+        append_to_log_file.last_known_user_time = 0
+    ########## end initialize variables and cehck for differences ##########
 
     date = datetime.datetime.now().strftime("%Y-%m-%d")
     time = datetime.datetime.now().strftime("%H-%M-%S.%f")
 
-    if last_known_active_processes == [] or last_known_active_window_process == []:
+    if append_to_log_file.last_known_active_processes == [] or append_to_log_file.last_known_active_window_process == []:
         first_run = True
     else:
         first_run = False
+
+    with open(file, "a") as file_object:
+        ########## Focus change ##########
+        if not same_active_process:
+            # append changed focused process to log
+            if active_window_process == None:
+                output_text = "{},{},{},{}\n".format(date, time, active_window_process, active_window_process)
+            else:
+                output_text = "{},{},{},{}\n".format(date, time, active_window_process[0], active_window_process[1])
+            output_text = "F,"+output_text
+            if first_run:
+                output_text = "I,"+output_text
+            file_object.writelines([output_text])
+        ########## end Focus change ##########
+
+        ########## Locked change ##########
+        if not same_locked:
+            pass
+
+        ########## end Locked change ##########
+
+        ########## User change ##########
+        if not same_user:
+            pass
+
+        ########## end User change ##########
+
+        ########## Process changes ##########
+        if not same_processes:
+            pass
+
+        ########## end Process changes ##########
+
+        ########## User activity time change ##########
+        if not same_last_active_time:
+            pass
+
+        ########## end User activity time change ##########
+
 
     with open(file, "a") as file_object:
         if not same_active_process:
@@ -141,6 +204,7 @@ def append_to_log_file(file = "process_log.csv", last_known_active_processes = [
                 output_text = "{},{},{},{},{},{},{},{},{}\n".format(date, time, active_window_process, active_window_process, True, is_locked, current_user, None, first_run)
             else:
                 output_text = "{},{},{},{},{},{},{},{},{}\n".format(date, time, active_window_process[0], active_window_process[1], True, is_locked, current_user, None, first_run)
+            output_text = "F,"+output_text
             if first_run:
                 output_text = "I,"+output_text
             file_object.writelines([output_text])
@@ -163,17 +227,17 @@ def append_to_log_file(file = "process_log.csv", last_known_active_processes = [
                 output_lines.append(output_text)
             file_object.writelines(output_lines)
     
-    return [active_processes, active_window_process]
+    return [active_processes, active_window_process, is_locked, current_user]
 
 
 def main() -> None:
-    active_processes, active_window_process = append_to_log_file()
-    runs = 1
+    file = "process_log_test.csv"
+    runs = 0
     while True:
+        runs += 1
+        append_to_log_file(file=file)
         print("\rlog runs: " + str(runs), end="")
         time.sleep(30)
-        active_processes, active_window_process = append_to_log_file(last_known_active_processes = active_processes, last_known_active_window_process = active_window_process)
-        runs += 1
 
 
 if __name__ == "__main__":
