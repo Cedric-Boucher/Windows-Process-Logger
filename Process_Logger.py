@@ -128,26 +128,31 @@ def append_to_log_file(file = "process_log.csv") -> None:
         same_processes = (active_processes == append_to_log_file.last_known_active_processes)
     except AttributeError:
         append_to_log_file.last_known_active_processes = []
+        same_processes = False
     
     try:
         same_active_process = (active_window_process == append_to_log_file.last_known_active_window_process)
     except AttributeError:
         append_to_log_file.last_known_active_window_process = []
+        same_active_process = False
     
     try:
         same_locked = (is_locked == append_to_log_file.last_known_locked)
     except AttributeError:
         append_to_log_file.last_known_locked = None
+        same_locked = False
     
     try:
         same_user = (current_user == append_to_log_file.last_known_user)
     except AttributeError:
         append_to_log_file.last_known_user = None
+        same_user = False
 
     try:
         same_last_active_time = (time_since_user_input == append_to_log_file.last_known_user_time)
     except AttributeError:
         append_to_log_file.last_known_user_time = 0
+        same_last_active_time = False
     ########## end initialize variables and cehck for differences ##########
 
     date = datetime.datetime.now().strftime("%Y-%m-%d")
@@ -163,10 +168,9 @@ def append_to_log_file(file = "process_log.csv") -> None:
         if not same_active_process:
             # append changed focused process to log
             if active_window_process == None:
-                output_text = "{},{},{},{}\n".format(date, time, active_window_process, active_window_process)
+                output_text = "F,{},{},{},{}\n".format(date, time, active_window_process, active_window_process)
             else:
-                output_text = "{},{},{},{}\n".format(date, time, active_window_process[0], active_window_process[1])
-            output_text = "F,"+output_text
+                output_text = "F,{},{},{},{}\n".format(date, time, active_window_process[0], active_window_process[1])
             if first_run:
                 output_text = "I,"+output_text
             file_object.writelines([output_text])
@@ -174,45 +178,27 @@ def append_to_log_file(file = "process_log.csv") -> None:
 
         ########## Locked change ##########
         if not same_locked:
-            pass
-
+            # append lock change to log
+            output_text = "L,{},{},{}\n".format(date, time, is_locked)
+            if first_run:
+                output_text = "I,"+output_text
+            file_object.writelines([output_text])
         ########## end Locked change ##########
 
         ########## User change ##########
         if not same_user:
-            pass
-
+            # append logged in user change to log
+            output_text = "U,{},{},{}\n".format(date, time, current_user)
+            if first_run:
+                output_text = "I,"+output_text
+            file_object.writelines([output_text])
         ########## end User change ##########
 
         ########## Process changes ##########
         if not same_processes:
-            pass
-
-        ########## end Process changes ##########
-
-        ########## User activity time change ##########
-        if not same_last_active_time:
-            pass
-
-        ########## end User activity time change ##########
-
-
-    with open(file, "a") as file_object:
-        if not same_active_process:
-            # append changed focused process to log
-            if active_window_process == None:
-                output_text = "{},{},{},{},{},{},{},{},{}\n".format(date, time, active_window_process, active_window_process, True, is_locked, current_user, None, first_run)
-            else:
-                output_text = "{},{},{},{},{},{},{},{},{}\n".format(date, time, active_window_process[0], active_window_process[1], True, is_locked, current_user, None, first_run)
-            output_text = "F,"+output_text
-            if first_run:
-                output_text = "I,"+output_text
-            file_object.writelines([output_text])
-
-        if not same_processes:
-            # append changed processes to log
-            process_differences = [process for process in active_processes if process not in last_known_active_processes]
-            [process_differences.append(process) for process in last_known_active_processes if process not in active_processes]
+            # append process changes to log
+            process_differences = [process for process in active_processes if process not in append_to_log_file.last_known_active_processes]
+            [process_differences.append(process) for process in append_to_log_file.last_known_active_processes if process not in active_processes]
             # process_differences is the symmetric difference between the two lists of active processes (set theory stuff)
             process_differences = [process for process in process_differences if process != []] # filtering out empty processes
             output_lines = list()
@@ -221,13 +207,23 @@ def append_to_log_file(file = "process_log.csv") -> None:
                     start_or_end = "start"
                 else:
                     start_or_end = "end"
-                output_text = "{},{},{},{},{},{},{},{},{}\n".format(date, time, process[0], process[1], False, is_locked, current_user, start_or_end, first_run)
+                output_text = "P,{},{},{},{},{}\n".format(date, time, process[0], process[1], start_or_end)
                 if first_run:
                     output_text = "I,"+output_text
                 output_lines.append(output_text)
             file_object.writelines(output_lines)
-    
-    return [active_processes, active_window_process, is_locked, current_user]
+        ########## end Process changes ##########
+
+        ########## User activity time change ##########
+        if not same_last_active_time:
+            # append last active time to log
+            output_text = "A,{},{},{}\n".format(date, time, time_since_user_input)
+            if first_run:
+                output_text = "I,"+output_text
+            file_object.writelines([output_text])
+        ########## end User activity time change ##########
+
+    return
 
 
 def main() -> None:
