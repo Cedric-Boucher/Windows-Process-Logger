@@ -2,22 +2,27 @@ LOG file format:
     lines can start with one of: "F" (focus change), "L" (locked/unlocked), "U" (user change), "P" (process start/end), "I" (initial run of program), "A" (user activity)
 
     format for each line start:
-        F,date(YYYY-MM-DD),time(HH-MM-SS.ZZZZ),PID(int),name(str)
+        F,PID(int),name(str)
         which means that process with process ID "PID" and name "name" is now in focus, and whatever process that was previously in focus no longer is
 
-        L,date(YYYY-MM-DD),time(HH-MM-SS.ZZZZ),is_locked(bool)
+        L,is_locked(bool)
         which simply indicates a change in the locked status of the computer, and is_locked is true if the computer is locked, else false
 
-        U,date(YYYY-MM-DD),time(HH-MM-SS.ZZZZ),current_user(str)
+        U,current_user(str)
         which indicates a change in the currently logged in user
 
-        P,date(YYYY-MM-DD),time(HH-MM-SS.ZZZZ),PID(int),name(str),start/end
+        P,PID(int),name(str),start/end
         which indicates that a process "PID" has either started or ended since the last time the script checked for running programs
 
-        A,date(YYYY-MM-DD),time(HH-MM-SS.ZZZZ),time_since_last_user_activity(float)
+        A,time_since_last_user_activity(float)
         which indicates a change in time since last user activity
         if this is an "I" line, time should be 0 (or near 0)
         if no user activity is detected, no new A lines will be added, when user activity is detected, a new A line will be added on the next log cycle
+
+        T,date(YYYY-MM-DD),time(HH-MM-SS.ZZZZ)
+        which indicates a datetime change for the following lines
+        this was implemented to reduce redundancy in lines in the previous format
+        what this means is that all lines below this line were written at this datetime, until another T line which will update the datetime again
 
         I,[]
         where [] is any other line format as described above

@@ -122,26 +122,35 @@ def append_to_log_file(file = "process_log.csv") -> None:
     active_processes = get_active_processes()
     [is_locked, current_user] = check_user_and_locked()
     time_since_user_input = get_last_input_time()
+    date = datetime.datetime.now().strftime("%Y-%m-%d")
+    time = datetime.datetime.now().strftime("%H-%M-%S.%f")
 
     ########## initialize variables and check for differences ##########
+    try:
+        same_datetime = (date == append_to_log_file.last_known_date and time == append_to_log_file.last_known_time)
+    except AttributeError:
+        append_to_log_file.last_known_date = date
+        append_to_log_file.last_known_time = time
+        same_datetime = False
+
     try:
         same_processes = (active_processes == append_to_log_file.last_known_active_processes)
     except AttributeError:
         append_to_log_file.last_known_active_processes = []
         same_processes = False
-    
+
     try:
         same_active_process = (active_window_process == append_to_log_file.last_known_active_window_process)
     except AttributeError:
         append_to_log_file.last_known_active_window_process = []
         same_active_process = False
-    
+
     try:
         same_locked = (is_locked == append_to_log_file.last_known_locked)
     except AttributeError:
         append_to_log_file.last_known_locked = None
         same_locked = False
-    
+
     try:
         same_user = (current_user == append_to_log_file.last_known_user)
     except AttributeError:
@@ -155,8 +164,6 @@ def append_to_log_file(file = "process_log.csv") -> None:
         same_last_active_time = False
     ########## end initialize variables and cehck for differences ##########
 
-    date = datetime.datetime.now().strftime("%Y-%m-%d")
-    time = datetime.datetime.now().strftime("%H-%M-%S.%f")
 
     if append_to_log_file.last_known_active_processes == [] or append_to_log_file.last_known_active_window_process == []:
         first_run = True
@@ -164,13 +171,21 @@ def append_to_log_file(file = "process_log.csv") -> None:
         first_run = False
 
     with open(file, "a") as file_object:
+        ########## Date/Time change ##########
+        if not same_datetime:
+            output_text = "T,{},{}".format(date, time)
+            if first_run:
+                output_text = "I,"+output_text
+            file_object.writelines([output_text])
+        ########## end Date/Time change ##########
+
         ########## Focus change ##########
         if not same_active_process:
             # append changed focused process to log
             if active_window_process == None:
-                output_text = "F,{},{},{},{}\n".format(date, time, active_window_process, active_window_process)
+                output_text = "F,{},{}\n".format(active_window_process, active_window_process)
             else:
-                output_text = "F,{},{},{},{}\n".format(date, time, active_window_process[0], active_window_process[1])
+                output_text = "F,{},{}\n".format(active_window_process[0], active_window_process[1])
             if first_run:
                 output_text = "I,"+output_text
             file_object.writelines([output_text])
@@ -179,7 +194,7 @@ def append_to_log_file(file = "process_log.csv") -> None:
         ########## Locked change ##########
         if not same_locked:
             # append lock change to log
-            output_text = "L,{},{},{}\n".format(date, time, is_locked)
+            output_text = "L,{}\n".format(is_locked)
             if first_run:
                 output_text = "I,"+output_text
             file_object.writelines([output_text])
@@ -188,7 +203,7 @@ def append_to_log_file(file = "process_log.csv") -> None:
         ########## User change ##########
         if not same_user:
             # append logged in user change to log
-            output_text = "U,{},{},{}\n".format(date, time, current_user)
+            output_text = "U,{}\n".format(current_user)
             if first_run:
                 output_text = "I,"+output_text
             file_object.writelines([output_text])
@@ -207,7 +222,7 @@ def append_to_log_file(file = "process_log.csv") -> None:
                     start_or_end = "start"
                 else:
                     start_or_end = "end"
-                output_text = "P,{},{},{},{},{}\n".format(date, time, process[0], process[1], start_or_end)
+                output_text = "P,{},{},{}\n".format(process[0], process[1], start_or_end)
                 if first_run:
                     output_text = "I,"+output_text
                 output_lines.append(output_text)
@@ -217,11 +232,21 @@ def append_to_log_file(file = "process_log.csv") -> None:
         ########## User activity time change ##########
         if not same_last_active_time:
             # append last active time to log
-            output_text = "A,{},{},{}\n".format(date, time, time_since_user_input)
+            output_text = "A,{}\n".format(time_since_user_input)
             if first_run:
                 output_text = "I,"+output_text
             file_object.writelines([output_text])
         ########## end User activity time change ##########
+
+    ########## update last_known flags ##########
+    append_to_log_file.last_known_date = date
+    append_to_log_file.last_known_time = time
+    append_to_log_file.last_known_active_processes = active_processes
+    append_to_log_file.last_known_active_window_process = active_window_process
+    append_to_log_file.last_known_locked = is_locked
+    append_to_log_file.last_known_user = current_user
+    append_to_log_file.last_known_user_time = last_input_time
+    ########## end update last_known flags ##########
 
     return
 
@@ -239,33 +264,3 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 
-# TODO: csv is not the best format for the log, maybe try using flags for different kinds of lines to avoid redundancy?
-# TODO: you don't check if is_locked or current_user changes between logs, if no proccesses change, any updates don't get logged
-
-"""
-LOG file format:
-    lines can start with one of: "F" (focus change), "L" (locked/unlocked), "U" (user change), "P" (process start/end), "I" (initial run of program), "A" (user activity)
-
-    format for each line start:
-        F,date(YYYY-MM-DD),time(HH-MM-SS.ZZZZ),PID(int),name(str)
-        which means that process with process ID "PID" and name "name" is now in focus, and whatever process that was previously in focus no longer is
-
-        L,date(YYYY-MM-DD),time(HH-MM-SS.ZZZZ),is_locked(bool)
-        which simply indicates a change in the locked status of the computer, and is_locked is true if the computer is locked, else false
-
-        U,date(YYYY-MM-DD),time(HH-MM-SS.ZZZZ),current_user(str)
-        which indicates a change in the currently logged in user
-
-        P,date(YYYY-MM-DD),time(HH-MM-SS.ZZZZ),PID(int),name(str),start/end
-        which indicates that a process "PID" has either started or ended since the last time the script checked for running programs
-
-        A,date(YYYY-MM-DD),time(HH-MM-SS.ZZZZ),time_since_last_user_activity(float)
-        which indicates a change in time since last user activity
-        if this is an "I" line, time should be 0 (or near 0)
-        if no user activity is detected, no new A lines will be added, when user activity is detected, a new A line will be added on the next log cycle
-
-        I,[]
-        where [] is any other line format as described above
-        the lines written to the log file on startup of the script will have this format, and are otherwise identical to normal lines
-        the reason this distinction exists is that lines from the first run can be redundant or contain "outdated" information, and should be treated separately
-"""
