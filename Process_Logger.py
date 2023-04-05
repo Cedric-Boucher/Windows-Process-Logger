@@ -173,7 +173,7 @@ def append_to_log_file(file = "process_log.csv") -> None:
     with open(file, "a") as file_object:
         ########## Date/Time change ##########
         if not same_datetime:
-            output_text = "T,{},{}".format(date, time)
+            output_text = "T,{},{}\n".format(date, time)
             if first_run:
                 output_text = "I,"+output_text
             file_object.writelines([output_text])
