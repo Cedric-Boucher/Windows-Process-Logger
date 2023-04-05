@@ -1,5 +1,5 @@
 LOG file format:
-    lines can start with one of: "F" (focus change), "L" (locked/unlocked), "U" (user change), "P" (process start/end), "I" (initial run of program), "A" (user activity)
+    lines can start with one of: "T" (date/time change), "F" (focus change), "L" (locked/unlocked), "U" (user change), "P" (process start/end), "I" (initial run of program), "A" (user activity)
 
     format for each line start:
         T,date(YYYY-MM-DD),time(HH-MM-SS.ZZZZ)
