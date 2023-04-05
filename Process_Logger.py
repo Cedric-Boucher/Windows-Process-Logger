@@ -117,6 +117,7 @@ def append_to_log_file(file = "process_log.csv") -> None:
 
     see FILE FORMAT.txt
     """
+    global last_input_time
 
     active_window_process = get_active_window_process()
     active_processes = get_active_processes()
@@ -126,13 +127,6 @@ def append_to_log_file(file = "process_log.csv") -> None:
     time = datetime.datetime.now().strftime("%H-%M-%S.%f")
 
     ########## initialize variables and check for differences ##########
-    try:
-        same_datetime = (date == append_to_log_file.last_known_date and time == append_to_log_file.last_known_time)
-    except AttributeError:
-        append_to_log_file.last_known_date = date
-        append_to_log_file.last_known_time = time
-        same_datetime = False
-
     try:
         same_processes = (active_processes == append_to_log_file.last_known_active_processes)
     except AttributeError:
@@ -158,9 +152,9 @@ def append_to_log_file(file = "process_log.csv") -> None:
         same_user = False
 
     try:
-        same_last_active_time = (time_since_user_input == append_to_log_file.last_known_user_time)
+        same_last_active_time = (last_input_time == append_to_log_file.last_known_input_time)
     except AttributeError:
-        append_to_log_file.last_known_user_time = 0
+        append_to_log_file.last_known_user_time = last_input_time
         same_last_active_time = False
     ########## end initialize variables and cehck for differences ##########
 
@@ -172,11 +166,10 @@ def append_to_log_file(file = "process_log.csv") -> None:
 
     with open(file, "a") as file_object:
         ########## Date/Time change ##########
-        if not same_datetime:
-            output_text = "T,{},{}\n".format(date, time)
-            if first_run:
-                output_text = "I,"+output_text
-            file_object.writelines([output_text])
+        output_text = "T,{},{}\n".format(date, time)
+        if first_run:
+            output_text = "I,"+output_text
+        file_object.writelines([output_text])
         ########## end Date/Time change ##########
 
         ########## Focus change ##########
@@ -239,13 +232,11 @@ def append_to_log_file(file = "process_log.csv") -> None:
         ########## end User activity time change ##########
 
     ########## update last_known flags ##########
-    append_to_log_file.last_known_date = date
-    append_to_log_file.last_known_time = time
     append_to_log_file.last_known_active_processes = active_processes
     append_to_log_file.last_known_active_window_process = active_window_process
     append_to_log_file.last_known_locked = is_locked
     append_to_log_file.last_known_user = current_user
-    append_to_log_file.last_known_user_time = last_input_time
+    append_to_log_file.last_known_input_time = last_input_time
     ########## end update last_known flags ##########
 
     return
