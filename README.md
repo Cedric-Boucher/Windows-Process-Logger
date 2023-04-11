@@ -1,2 +1,7 @@
 # Windows-Process-Logger
-logs active and focused processes (and more useful info to go along with it)
+Logs:
+- When any process starts or stops.
+- When the user changes the process in focus.
+- Time since last user activity.
+- Changes in the lock status of the logged in user.
+- Changes in the logged in user
