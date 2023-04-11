@@ -5,3 +5,5 @@ Logs:
 - Time since last user activity.
 - Changes in the lock status of the logged in user.
 - Changes in the logged in user
+
+Yeah it only works on Windows, sorry Linux and MacOS users
