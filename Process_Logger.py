@@ -166,10 +166,11 @@ def append_to_log_file(file = "process_log.csv") -> None:
 
     with open(file, "a") as file_object:
         ########## Date/Time change ##########
-        output_text = "T,{},{}\n".format(date, time)
-        if first_run:
-            output_text = "I,"+output_text
-        file_object.writelines([output_text])
+        if any([not same_active_process, not same_locked, not same_user, not same_processes, not same_last_active_time]):
+            output_text = "T,{},{}\n".format(date, time)
+            if first_run:
+                output_text = "I,"+output_text
+            file_object.writelines([output_text])
         ########## end Date/Time change ##########
 
         ########## Focus change ##########
