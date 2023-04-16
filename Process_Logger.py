@@ -255,3 +255,5 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 
+# TODO: add Linux support?
+# TODO: create data analysis/graphing capabilities?
