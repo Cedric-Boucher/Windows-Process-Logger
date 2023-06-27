@@ -10,7 +10,7 @@ import csv
 
 
 class Processed_Logger_Data:
-    def __init__(self, log_file, preprocess_all: bool = False):
+    def __init__(self, log_file, preprocess_all: bool = False) -> None:
         """
         if preprocess_all is True, then all data that can
         be output with getters will be processed in advanced
@@ -28,19 +28,17 @@ class Processed_Logger_Data:
                     self.__csv_log_data[-1].append(element)
 
         self.__user_list = list()
+        self.__user_list_processed: bool = False
 
         if preprocess_all:
-            pass # run all preprocessing methods
+            self.__process_user_list()
 
-    def get_users(self, force_rerun = False) -> list[str]: # FIXME separate processing and actually returning so that it can be preprocessed
+        return None
+
+    def __process_user_list(self) -> None:
         """
-        get a list of all users that appear in the log file
-
-        if force_rerun is True, processing will be rerun even if it has already been run
+        does the actual processing for get_users()
         """
-        if not force_rerun and len(self.__user_list) > 0:
-            return self.__user_list
-
         for row in self.__csv_log_data:
             if row[0] == "I":
                 row = row[1:] # we don't care if it's the inital run or not for this
@@ -51,7 +49,22 @@ class Processed_Logger_Data:
                     # row[1] is the user string
                     self.__user_list.append(row[1])
 
-        # after having gone through every row and adding all the data,
+        self.__user_list_processed = True
+
+        return None
+
+    def get_users(self, force_rerun = False) -> list[str]:
+        """
+        get a list of all users that appear in the log file
+
+        if force_rerun is True, processing will be rerun even if it has already been run
+        """
+        if not force_rerun and self.__user_list_processed:
+            return self.__user_list
+
+        else:
+            self.__process_user_list()
+
         return self.__user_list
 
 
