@@ -244,7 +244,7 @@ def append_to_log_file(file = "process_log.csv") -> None:
 
 
 def main() -> None:
-    file = "process_log_test.csv"
+    file = "process_log.csv"
     runs = 0
     while True:
         runs += 1
