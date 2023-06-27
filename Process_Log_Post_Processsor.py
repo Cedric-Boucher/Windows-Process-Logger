@@ -27,5 +27,30 @@ class Processed_Logger_Data:
                 for element in row:
                     self.__csv_log_data[-1].append(element)
 
+        self.__user_list = list()
+
         if preprocess_all:
             pass # run all preprocessing methods
+
+    def get_users(self, force_rerun = False) -> list[str]:
+        """
+        get a list of all users that appear in the log file
+
+        if force_rerun is True, processing will be rerun even if it has already been run
+        """
+        if not force_rerun and len(self.__user_list) > 0:
+            return self.__user_list
+
+        for row in self.__csv_log_data:
+            if row[0] == "I":
+                row = row[1:] # we don't care if it's the inital run or not for this
+            
+            if row[0] == "U":
+                # this signifies a user line
+                if row[1] not in self.__user_list:
+                    # row[1] is the user string
+                    self.__user_list.append(row[1])
+
+        # after having gone through every row and adding all the data,
+        return self.__user_list
+
