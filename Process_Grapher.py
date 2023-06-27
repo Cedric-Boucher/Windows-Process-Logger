@@ -79,7 +79,7 @@ def pie_chart_focused_processes(log_data):
 
         if line_parts[0] == 'F':
             # A new process has come into focus or the log has ended
-            if current_process is not None:
+            if current_process is not None and current_process != "None":
                 # Update the total time for the previous process in focus
                 end_time = current_time
                 focused_time = end_time - current_process_start_time
@@ -92,17 +92,9 @@ def pie_chart_focused_processes(log_data):
             current_process = line_parts[2]
             current_process_start_time = current_time
 
-    # Add the final focused time to the process_focused_times dictionary
-    if current_process is not None:
-        focused_time = datetime.datetime.now() - current_process_start_time
-        if current_process in process_focused_times:
-            process_focused_times[current_process] += focused_time
-        else:
-            process_focused_times[current_process] = focused_time
-
     # Create the pie chart
-    labels = list(process_focused_times.keys())
-    times = list(process_focused_times.values())
+    labels = list(process_focused_times.keys())[:5]
+    times = list(process_focused_times.values())[:5]
     plt.pie([x.total_seconds() for x in times], labels=labels, autopct='%1.1f%%')
     plt.title('Focused Processes')
     plt.show()
