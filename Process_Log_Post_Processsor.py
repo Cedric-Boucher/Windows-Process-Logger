@@ -32,7 +32,7 @@ class Processed_Logger_Data:
         if preprocess_all:
             pass # run all preprocessing methods
 
-    def get_users(self, force_rerun = False) -> list[str]:
+    def get_users(self, force_rerun = False) -> list[str]: # FIXME separate processing and actually returning so that it can be preprocessed
         """
         get a list of all users that appear in the log file
 
@@ -54,3 +54,7 @@ class Processed_Logger_Data:
         # after having gone through every row and adding all the data,
         return self.__user_list
 
+
+if __name__ == "__main__":
+    data = Processed_Logger_Data("process_log.csv")
+    print(data.get_users())
