@@ -30,6 +30,9 @@ class Processed_Logger_Data:
         self.__user_list = list()
         self.__user_list_processed: bool = False
 
+        self.__process_name_list = list()
+        self.__process_name_list_processed: bool = False
+
         if preprocess_all:
             self.__process_user_list()
 
@@ -67,7 +70,40 @@ class Processed_Logger_Data:
 
         return self.__user_list
 
+    def __process_process_name_list(self) -> None:
+        """
+        does the actual processing for get_process_names()
+        """
+        for row in self.__csv_log_data:
+            if row[0] == "I":
+                row = row[1:] # we don't care if it's the inital run or not for this
+            
+            if row[0] == "P":
+                # this signifies a process line
+                if row[2] not in self.__process_name_list:
+                    # row[2] is the process string
+                    self.__process_name_list.append(row[2])
+
+        self.__process_name_list_processed = True
+
+        return None
+
+    def get_process_names(self, force_rerun = False) -> list[str]:
+        """
+        get a list of all process names that appear in the log file
+
+        if force_rerun is True, processing will be rerun even if it has already been run
+        """
+        if not force_rerun and self.__process_name_list_processed:
+            return self.__process_name_list
+
+        else:
+            self.__process_process_name_list()
+
+        return self.__process_name_list
+
 
 if __name__ == "__main__":
     data = Processed_Logger_Data("process_log.csv")
     print(data.get_users())
+    print(data.get_process_names())
