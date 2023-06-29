@@ -35,6 +35,7 @@ class Processed_Logger_Data:
 
         if preprocess_all:
             self.__process_user_list()
+            self.__process_process_name_list()
 
         return None
 
